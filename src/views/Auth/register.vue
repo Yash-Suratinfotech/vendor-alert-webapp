@@ -47,8 +47,10 @@
 import { ref, computed } from "vue";
 import { register } from "@/api/auth";
 import { useLayoutStore } from "@/stores/layout";
+import { useRouter } from "vue-router";
 
 const layoutStore = useLayoutStore();
+const router = useRouter();
 
 const email = ref("");
 const password = ref("");
@@ -73,15 +75,21 @@ const handleRegister = async () => {
     return;
   }
   isLoading.value = true;
+  try {
+    const payload = {
+      email: email.value,
+      password: password.value,
+      userType: user_type.value
+    };
 
-  const payload = {
-    email: email.value,
-    password: password.value,
-  };
-  await register(payload).then((res) => {
-    layoutStore.showAlert(res.message, "alert-danger");
-    router.push('/login')
+    const res = await register(payload);
+    if (res.success) {
+      localStorage.setItem('pendingVerificationEmail', email.value);
+      layoutStore.showAlert(res.message, "alert-success");
+      router.push({ name: 'verify-otp', query: { email: email.value } });
+    }
+  } finally {
     isLoading.value = false;
-  });
+  }
 };
 </script>

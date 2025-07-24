@@ -59,12 +59,16 @@ const errorHandler = (error) => {
         showErrorMessage("File size too large !!");
         break;
       case 401:
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        showErrorMessage(
-          error?.response?.data?.message || "User is Unauthorized !!"
-        );
-        window.location.reload();
+        // localStorage.removeItem("token");
+        // localStorage.removeItem("user");
+        if (error?.response?.data?.message || error?.response?.data?.error) {
+          showErrorMessage(
+            error?.response?.data?.message || error?.response?.data?.error
+          );
+        } else {
+          showErrorMessage("User is Unauthorized !!");
+        }
+        // window.location.reload();
         break;
       case 400:
         if (error?.response?.data?.message || error?.response?.data?.error) {

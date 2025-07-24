@@ -18,11 +18,11 @@
                 </div>
 
                 <div class="d-grid gap-2">
-                    <!-- <div class="text-end">
+                    <div class="text-end">
                         <router-link to="/forgot-password" class="text-decoration-none forget-link">Forgot
                             password?</router-link>
-                    </div> -->
-                    <button type="submit" class="btn btn-primary pad-auth fw-medium" :disabled="authStore.loading">
+                    </div>
+                    <button type="submit" class="btn btn-primary" :disabled="authStore.loading">
                         <span v-if="authStore.loading" class="spinner-border spinner-border-sm me-2" role="status"
                             aria-hidden="true"></span>
                         Sign in
@@ -66,12 +66,19 @@ const handleSignIn = async () => {
     const payload = {
         email: email.value,
         password: password.value
-    }
-    await authStore.login(payload).then((res) => {
-        if (res.status == 200) {
-            router.push('/chat')
+    };
+
+    try {
+        const res = await authStore.login(payload);
+        if (res.status === 200) {
+            router.push('/chat');
         }
-    })
+    } catch (error) {
+        if (error.response?.data?.requiresVerification) {
+            localStorage.setItem('pendingVerificationEmail', email.value);
+            router.push({ name: 'verify-otp', query: { email: email.value } });
+        }
+    }
 }
 
 onMounted(async () => {

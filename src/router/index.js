@@ -24,6 +24,30 @@ const routes = [
       authRequired: false,
     },
   },
+  {
+    path: "/verify-otp",
+    name: "verify-otp",
+    component: () => import("../views/Auth/verify-otp.vue"),
+    meta: {
+      authRequired: false,
+    },
+  },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: () => import("../views/Auth/forgot-passwords.vue"),
+    meta: {
+      authRequired: false,
+    },
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    component: () => import("../views/Auth/reset-password.vue"),
+    meta: {
+      authRequired: false,
+    },
+  },
   // chat Route
   {
     path: "/chat",

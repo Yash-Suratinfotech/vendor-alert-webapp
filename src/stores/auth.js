@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { login, updateProfile } from "@/api/auth";
+import { login, getProfile, updateProfile } from "@/api/auth";
 import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
@@ -42,18 +42,16 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    async getProfile(token) {
+    async getProfile() {
       try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_API_URL}/auth/profile`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (response.data?.user) {
-          localStorage.setItem("user", JSON.stringify(response.data.user));
+        const token = localStorage.getItem("token");
+        const res = await getProfile(token);
+        if (res?.user) {
+          localStorage.setItem("user", JSON.stringify(res.user));
           localStorage.setItem("token", token);
           this.initializeAuth();
         }
-        return response.data;
+        return res;
       } catch (error) {
         return error;
       }
@@ -74,13 +72,6 @@ export const useAuthStore = defineStore("auth", {
       } finally {
         this.loading = false;
       }
-    },
-
-    async userUpdateData(data) {
-      this.user = {
-        ...this.user,
-        ...data,
-      };
     },
 
     async logout() {
