@@ -57,6 +57,24 @@ const routes = [
       authRequired: true,
     },
   },
+
+  // whatsapp chat Route
+  {
+    path: "/wp-chat",
+    name: "wp chat",
+    component: () => import("../views/whatsappChat.vue"),
+    meta: {
+      authRequired: true,
+    },
+  },
+  {
+    path: "/chats",
+    name: "chats",
+    component: () => import("../views/chats.vue"),
+    meta: {
+      authRequired: true,
+    },
+  },
 ];
 
 const router = createRouter({
