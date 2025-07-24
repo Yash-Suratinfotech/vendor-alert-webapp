@@ -3,42 +3,32 @@
     <!-- Sidebar -->
     <div class="sidebar" :class="{ 'mobile-hidden': isMobileChatOpen }">
       <div class="sidebar-header">
-        <div class="profile-pic">ME</div>
+        <div class="profile-pic text-capitalize">{{ authStore.user.username.charAt(0) }}</div>
         <div class="header-icons">
           <fa icon="fa-ellipsis-v" />
         </div>
       </div>
 
       <div class="search-bar">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search or start new chat"
-          v-model="searchQuery"
-          @input="handleSearch"
-        />
+        <input type="text" class="search-input" placeholder="Search or start new chat" v-model="searchQuery"
+          @input="handleSearch" />
         <fa icon="fa-magnifying-glass" />
       </div>
 
       <div class="chat-list">
-        <div
-          v-for="chat in filteredChats"
-          :key="chat.id"
-          class="chat-item"
-          :class="{ active: activeChat?.id === chat.id }"
-          @click="selectChat(chat)"
-        >
-          <div class="chat-avatar" :style="{ background: chat.color }">
-            {{ chat.avatar }}
+        <div v-for="chat in filteredChats" :key="chat.contactId" class="chat-item"
+          :class="{ active: chatStore.conversation?.id === chat.contactId }" @click="selectChat(chat)">
+          <div class="chat-avatar text-capitalize" :style="{ background: chat.color }">
+            {{ chat.contactName?.charAt(0) }}
           </div>
           <div class="chat-info">
-            <div class="chat-name">{{ chat.name }}</div>
-            <div class="chat-last-message">{{ chat.lastMessage }}</div>
+            <div class="chat-name">{{ chat.contactName }}</div>
+            <div class="chat-last-message">{{ chat?.lastMessage }}</div>
           </div>
           <div class="chat-meta">
-            <div class="chat-time">{{ chat.time }}</div>
-            <div v-if="chat.unreadCount" class="unread-count">
-              {{ chat.unreadCount }}
+            <div class="chat-time">{{ chat?.lastMessageTime }}</div>
+            <div v-if="chat?.unreadCount" class="unread-count">
+              {{ chat?.unreadCount }}
             </div>
           </div>
         </div>
@@ -46,31 +36,21 @@
     </div>
 
     <!-- Chat Area -->
-    <div
-      class="chat-area"
-      :class="{
-        'mobile-active': isMobileChatOpen,
-        'desktop-active': activeChat && !isMobile,
-      }"
-    >
-      <div v-if="activeChat" class="chat-header">
-        <fa
-          icon="fa-arrow-left"
-          @click="closeMobileChat"
-          v-if="isMobile"
-          class="back-button"
-        ></fa>
-        <div
-          class="chat-avatar"
-          :style="{ background: activeChat.color, position: 'relative' }"
-        >
-          {{ activeChat.avatar }}
+    <div class="chat-area" :class="{
+      'mobile-active': isMobileChatOpen,
+      'desktop-active': chatStore.conversation && !isMobile,
+    }">
+      <div v-if="chatStore.conversation" class="chat-header">
+        <fa icon="fa-arrow-left" @click="closeMobileChat" v-if="isMobile" class="back-button"></fa>
+        <div class="chat-avatar text-capitalize"
+          :style="{ background: chatStore.conversation.color, position: 'relative' }">
+          {{ chatStore.conversation.contactName?.charAt(0) }}
           <div class="online-indicator"></div>
         </div>
         <div class="chat-header-info">
-          <div class="chat-header-name">{{ activeChat.name }}</div>
+          <div class="chat-header-name">{{ chatStore.conversation.contactName }}</div>
           <div class="chat-header-status">
-            {{ activeChat.status || "online" }}
+            {{ chatStore.conversation.status || "online" }}
           </div>
         </div>
         <div class="chat-header-actions">
@@ -78,26 +58,46 @@
         </div>
       </div>
 
-      <div class="messages-area" ref="messagesArea" v-if="activeChat">
-        <div
-          v-for="message in messages"
-          :key="message.id"
-          class="message"
-          :class="{ sent: message.sent, received: !message.sent }"
-        >
-          <div class="message-bubble">
-            <div class="message-text">{{ message.text }}</div>
+      <div class="messages-area" ref="messagesArea" v-if="chatStore.conversation">
+        <div v-for="m in chatStore.messagesList" :key="m.id" class="message text-white"
+          :class="{ sent: m.sender?.id == authStore.user.id, received: m.sender?.id != authStore.user.id }">
+          <div v-if="m.messageType == 'text'" class="message-bubble">
+            <div class="message-text">{{ m.content }}</div>
             <div class="message-time">
-              {{ message.time }}
-              <span v-if="message.sent" class="message-status">
-                <fa
-                  :icon="
-                    message.status === 'read' ? 'fa-check-double' : 'fa-check'
-                  "
-                  :style="{
-                    color: message.status === 'read' ? '#53bdeb' : '#8696a0',
-                  }"
-                />
+              {{ defaultMessageTime(m.createdAt) }}
+              <span v-if="m.sender?.id == authStore.user.id" class="message-status">
+                <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'
+                  " :style="{
+                    color: m.isRead ? '#53bdeb' : '#8696a0',
+                  }" />
+              </span>
+            </div>
+          </div>
+          <div v-else-if="m.messageType == 'file'" class="message-bubble">
+            <img :src="m.fileUrl" :alt="m.fileName" class="img-fluid mb-2">
+            <div class="message-text">{{ m.content || m.fileName }}</div>
+            <div class="message-time">
+              {{ defaultMessageTime(m.createdAt) }}
+              <span v-if="m.sender?.id == authStore.user.id" class="message-status">
+                <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'
+                  " :style="{
+                    color: m.isRead ? '#53bdeb' : '#8696a0',
+                  }" />
+              </span>
+            </div>
+          </div>
+          <div v-else-if="m.messageType == 'order_notification'" class="message-bubble">
+            <img :src="m.orderData.image" :alt="m.orderData.name" class="img-fluid mb-2">
+            <div class="message-text">Name: {{ m.orderData.name }}</div>
+            <div class="message-text">SKU: {{ m.orderData.sku }}</div>
+            <div class="message-text">Qty: {{ m.orderData.qty }}</div>
+            <div class="message-time">
+              {{ defaultMessageTime(m.createdAt) }}
+              <span v-if="m.sender?.id == authStore.user.id" class="message-status">
+                <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'
+                  " :style="{
+                    color: m.isRead ? '#53bdeb' : '#8696a0',
+                  }" />
               </span>
             </div>
           </div>
@@ -121,19 +121,12 @@
         </div>
       </div>
 
-      <div class="input-area" v-if="activeChat">
+      <div class="input-area" v-if="chatStore.conversation">
         <div class="input-actions">
           <fa icon="fa-plus" @click="handleAttachment" />
         </div>
-        <textarea
-          ref="messageInput"
-          class="message-input"
-          placeholder="Type a message"
-          rows="1"
-          v-model="currentMessage"
-          @input="handleInputResize"
-          @keypress="handleKeyPress"
-        ></textarea>
+        <textarea ref="messageInput" class="message-input" placeholder="Type a message" rows="1"
+          v-model="currentMessage" @input="handleInputResize" @keypress="handleKeyPress"></textarea>
         <button class="send-button" @click="sendMessage">
           <fa icon="fas fa-paper-plane" />
         </button>
@@ -144,6 +137,12 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { useAuthStore } from '@/stores/auth';
+import { useChatStore } from '@/stores/chat';
+import { defaultMessageTime } from "@/helpers/generalVariable.js"
+
+const authStore = useAuthStore();
+const chatStore = useChatStore();
 
 // Reactive state
 const searchQuery = ref("");
@@ -156,116 +155,19 @@ const windowWidth = ref(window.innerWidth);
 const isMobile = computed(() => windowWidth.value < 768);
 
 // Chat state
-const activeChat = ref(null);
 const isMobileChatOpen = ref(false);
 
 // Typing state
 const isTyping = ref(false);
 const typingUser = ref("");
 
-// Sample chats data
-const chats = ref([
-  {
-    id: 1,
-    name: "John Smith",
-    avatar: "JS",
-    color: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
-    lastMessage: "Hey! How are you doing today?",
-    time: "2:30 PM",
-    unreadCount: 3,
-    status: "online",
-  },
-  {
-    id: 2,
-    name: "Emma Johnson",
-    avatar: "EJ",
-    color: "linear-gradient(135deg, #74b9ff, #0984e3)",
-    lastMessage: "Perfect! See you tomorrow at 9 AM",
-    time: "1:45 PM",
-    unreadCount: 0,
-    status: "online",
-  },
-  {
-    id: 3,
-    name: "Sarah Wilson",
-    avatar: "SW",
-    color: "linear-gradient(135deg, #fd79a8, #e84393)",
-    lastMessage: "Thanks for sharing those photos!",
-    time: "12:20 PM",
-    unreadCount: 0,
-    status: "last seen recently",
-  },
-  {
-    id: 4,
-    name: "Mike Davis",
-    avatar: "MD",
-    color: "linear-gradient(135deg, #55a3ff, #3742fa)",
-    lastMessage: "Can we reschedule our meeting?",
-    time: "11:15 AM",
-    unreadCount: 1,
-    status: "online",
-  },
-  {
-    id: 5,
-    name: "Anna Brown",
-    avatar: "AB",
-    color: "linear-gradient(135deg, #fd7474, #ff3838)",
-    lastMessage: "Great job on the presentation! 👏",
-    time: "Yesterday",
-    unreadCount: 0,
-    status: "last seen yesterday",
-  },
-  {
-    id: 6,
-    name: "Team Group",
-    avatar: "TG",
-    color: "linear-gradient(135deg, #00b894, #00a085)",
-    lastMessage: "Mike: Don't forget about the deadline",
-    time: "Yesterday",
-    unreadCount: 0,
-    status: "group",
-  },
-]);
-
-// Sample messages data
-const messages = ref([
-  {
-    id: 1,
-    text: "Hey! How are you doing today?",
-    sent: false,
-    time: "2:25 PM",
-    status: "delivered",
-  },
-  {
-    id: 2,
-    text: "I was thinking we could grab coffee later if you're free",
-    sent: false,
-    time: "2:26 PM",
-    status: "delivered",
-  },
-  {
-    id: 3,
-    text: "Hi John! I'm doing great, thanks for asking 😊",
-    sent: true,
-    time: "2:28 PM",
-    status: "read",
-  },
-  {
-    id: 4,
-    text: "Coffee sounds perfect! What time works for you?",
-    sent: true,
-    time: "2:29 PM",
-    status: "read",
-  },
-]);
-
 // Computed properties
 const filteredChats = computed(() => {
   if (!searchQuery.value) {
-    return chats.value;
+    return chatStore.conversations;
   }
-  return chats.value.filter((chat) =>
-    chat.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  return chatStore.conversations.filter((chat) =>
+    chat.contactName.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
@@ -277,10 +179,11 @@ const handleResize = () => {
 // Watch for mobile state changes
 watch(isMobile, (newIsMobile) => {
   if (!newIsMobile) {
-    // Switching to desktop - close mobile chat and select first chat if none selected
+    // Switching to desktop - close mobile chat
     isMobileChatOpen.value = false;
-    if (!activeChat.value && chats.value.length > 0) {
-      activeChat.value = chats.value[0];
+    // Auto-select chat if conversation exists
+    if (chatStore.conversation) {
+      selectChat(chatStore.conversation);
     }
   } else {
     // Switching to mobile - close chat view
@@ -289,9 +192,10 @@ watch(isMobile, (newIsMobile) => {
 });
 
 // Methods
-const selectChat = (chat) => {
-  activeChat.value = chat;
-
+const selectChat = async (chat) => {
+  await chatStore.setConversations(chat);
+  const filter = `?userId=${authStore.user.id}&contactId=${chat.contactId}&page=1&limit=50`;
+  await chatStore.getMessages(filter);
   // On mobile, open the chat area
   if (isMobile.value) {
     isMobileChatOpen.value = true;
@@ -321,20 +225,6 @@ const closeMobileChat = () => {
 const sendMessage = () => {
   if (!currentMessage.value.trim()) return;
 
-  const newMessage = {
-    id: messages.value.length + 1,
-    text: currentMessage.value,
-    sent: true,
-    time: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    status: "sent",
-  };
-
-  messages.value.push(newMessage);
-  currentMessage.value = "";
-
   // Reset textarea height
   if (messageInput.value) {
     messageInput.value.style.height = "auto";
@@ -351,6 +241,16 @@ const sendMessage = () => {
   setTimeout(() => {
     newMessage.status = "read";
   }, 3000);
+
+  const payload = {
+    senderId: authStore.user.id,
+    receiverId: chatStore.conversation.contactId,
+    content: currentMessage.value,
+    messageType: "text",
+  }
+
+  chatStore.sendMessage(payload);
+  currentMessage.value = "";
 
   // Stop typing indicator
   stopTyping();
@@ -407,14 +307,28 @@ const handleAttachment = () => {
   console.log("Attachment menu opened");
 };
 
+const getConversations = async () => {
+  var filter = '';
+  const u = authStore.user;
+  if (u.user_type == 'store_owner') {
+    filter = `?userId=${u.id}&userType=${u.user_type}&shopId=${u.shop_id}`;
+  } else {
+    filter = `?userId=${u.id}&userType=${u.user_type}`;
+  }
+
+  await chatStore.getConversations(filter);
+}
+
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
+  await getConversations();
+
   // Add resize event listener
   window.addEventListener("resize", handleResize);
 
-  // Set initial active chat on desktop
-  if (!isMobile.value && chats.value.length > 0) {
-    activeChat.value = chats.value[0];
+  // If a conversation exists in localStorage, auto-select it
+  if (!isMobile.value && chatStore.conversation) {
+    await selectChat(chatStore.conversation);
   }
 
   // Initial scroll to bottom

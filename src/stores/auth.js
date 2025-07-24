@@ -33,9 +33,8 @@ export const useAuthStore = defineStore("auth", {
         if (res.user && res.token) {
           localStorage.setItem("user", JSON.stringify(res.user));
           localStorage.setItem("token", res.token);
-          this.initializeAuth();
+          window.location.reload();
         }
-
         return res;
       } finally {
         this.loading = false;

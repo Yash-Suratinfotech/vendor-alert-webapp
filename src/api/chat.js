@@ -1,9 +1,9 @@
 import axios from "axios";
 import errorHandler from "@/helpers/errorHandler";
-const API_URL = import.meta.env.VITE_APP_ROOT_API
+const API_URL = import.meta.env.VITE_APP_ROOT_API;
 
 // Get conversation list for current user
-export const getConversations = async (filter = '') => {
+export const getConversations = async (filter = "") => {
   try {
     const res = await axios.get(`${API_URL}/conversations${filter}`);
     return res.data;
@@ -14,7 +14,7 @@ export const getConversations = async (filter = '') => {
 };
 
 // Get messages between two users
-export const getMessages = async (filter = '') => {
+export const getMessages = async (filter = "") => {
   try {
     const res = await axios.get(`${API_URL}/messages${filter}`);
     return res.data;
@@ -25,7 +25,7 @@ export const getMessages = async (filter = '') => {
 };
 
 // Send a message
-export const sendMessages = async (payload) => {
+export const sendMessage = async (payload) => {
   try {
     const res = await axios.post(`${API_URL}/messages`, payload);
     return res.data;

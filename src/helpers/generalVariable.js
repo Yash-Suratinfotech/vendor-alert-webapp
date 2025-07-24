@@ -42,7 +42,7 @@ export const formatTimeAgo = (timestamp) => {
 };
 
 export const formatMonthDate = (timestamp) => {
-  if(!timestamp) return " - / - / - ";
+  if (!timestamp) return " - / - / - ";
   const date = new Date(timestamp);
 
   const formatted = date.toLocaleDateString("en-US", {
@@ -54,7 +54,7 @@ export const formatMonthDate = (timestamp) => {
 };
 
 export const defaultFormatDate = (timestamp) => {
-  if (!timestamp) return '-';
+  if (!timestamp) return "-";
   return new Date(timestamp)
     .toLocaleDateString("en-US", {
       month: "2-digit",
@@ -64,7 +64,17 @@ export const defaultFormatDate = (timestamp) => {
     .replace(/\//g, "-"); // "04-22-2025"
 };
 
+export const defaultMessageTime = (timestamp) => {
+  if (!timestamp) return "-";
+  return new Date(timestamp)
+    .toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }); // "2:26 PM"
+};
+
 export default {
   formatTimeAgo,
   formatMonthDate,
+  defaultMessageTime
 };
