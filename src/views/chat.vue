@@ -26,7 +26,7 @@
               <div class="chat-last-message">{{ chat?.lastMessage }}</div>
             </div>
             <div class="chat-meta">
-              <div class="chat-time">{{ chat?.lastMessageTime }}</div>
+              <div class="chat-time">{{ defaultMessageTime(chat?.lastMessageTime) }}</div>
               <div v-if="chat?.unreadCount" class="unread-count">
                 {{ chat?.unreadCount }}
               </div>
@@ -88,9 +88,9 @@
             </div>
             <div v-else-if="m.messageType == 'order_notification'" class="message-bubble">
               <img :src="m.orderData.image" :alt="m.orderData.name" class="img-fluid mb-2">
-              <div class="message-text">Name: {{ m.orderData.name }}</div>
-              <div class="message-text">SKU: {{ m.orderData.sku }}</div>
-              <div class="message-text">Qty: {{ m.orderData.qty }}</div>
+              <div class="message-text"><span>Name</span> <span class="mx-2">:</span> {{ m.orderData.name }}</div>
+              <div class="message-text"><span>SKU</span> <span class="mx-2">:</span> {{ m.orderData.sku }}</div>
+              <div class="message-text"><span>Qty</span> <span class="mx-2">:</span> {{ m.orderData.qty }}</div>
               <div class="message-time">
                 {{ defaultMessageTime(m.createdAt) }}
                 <span v-if="m.sender?.id == authStore.user.id" class="message-status">
@@ -311,11 +311,7 @@
   const getConversations = async () => {
     var filter = '';
     const u = authStore.user;
-    if (u.user_type == 'store_owner') {
-      filter = `?userId=${u.id}&userType=${u.user_type}&shopId=${u.shop_id}`;
-    } else {
-      filter = `?userId=${u.id}&userType=${u.user_type}`;
-    }
+    filter = `?userId=${u.id}&userType=${u.user_type}`;
   
     await chatStore.getConversations(filter);
   }

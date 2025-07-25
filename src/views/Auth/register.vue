@@ -16,14 +16,6 @@
           <label for="password" class="form-label">Password</label>
           <input type="password" class="form-control" id="password" v-model="password" placeholder="••••••" />
         </div>
-        <div>
-          <label for="user_type" class="form-label">User Type</label>
-          <select type="user_type" class="form-select" id="user_type" v-model="user_type"
-            placeholder="Select a your user type">
-            <option value="vendor">Vendor</option>
-            <option value="store_owner">Store Owner</option>
-          </select>
-        </div>
 
         <div class="d-grid gap-2">
           <button type="submit" class="btn btn-primary pad-auth" :disabled="isLoading">
@@ -54,11 +46,10 @@ const router = useRouter();
 
 const email = ref("");
 const password = ref("");
-const user_type = ref('vendor');
 const isLoading = ref(false);
 
 const isFormValid = computed(() => {
-  return email.value && password.value && user_type.value;
+  return email.value && password.value;
 });
 
 const handleRegister = async () => {
@@ -79,7 +70,7 @@ const handleRegister = async () => {
     const payload = {
       email: email.value,
       password: password.value,
-      userType: user_type.value
+      userType: 'vendor'
     };
 
     const res = await register(payload);

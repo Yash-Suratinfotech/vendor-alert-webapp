@@ -63,7 +63,7 @@ export const useChatStore = defineStore("chat", {
       try {
         const res = await sendMessage(payload);
         if (res.status == 200) {
-          this.messages.push(res.messages);
+          this.messages.push(res.message);
         }
         return res;
       } finally {

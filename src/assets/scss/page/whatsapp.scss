@@ -45,7 +45,7 @@
   color: white;
   font-weight: bold;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 18px;
 }
 
 .header-icons {
@@ -289,6 +289,12 @@
   border-radius: 8px;
   position: relative;
   word-wrap: break-word;
+}
+
+.message-bubble span:first-child{
+  display: inline-block;
+  min-width: 44px;
+  color: #8696A0;
 }
 
 .message.received .message-bubble {
@@ -562,8 +568,6 @@
   .profile-pic {
     width: 35px;
     height: 35px;
-  }
-  .profile-pic {
     font-size: 12px;
   }
   .chat-header,

@@ -59,8 +59,8 @@ const errorHandler = (error) => {
         showErrorMessage("File size too large !!");
         break;
       case 401:
-        // localStorage.removeItem("token");
-        // localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         if (error?.response?.data?.message || error?.response?.data?.error) {
           showErrorMessage(
             error?.response?.data?.message || error?.response?.data?.error
@@ -68,18 +68,9 @@ const errorHandler = (error) => {
         } else {
           showErrorMessage("User is Unauthorized !!");
         }
-        // window.location.reload();
+        window.location.reload();
         break;
-      case 400:
-        if (error?.response?.data?.message || error?.response?.data?.error) {
-          showErrorMessage(
-            error?.response?.data?.message || error?.response?.data?.error
-          );
-        } else {
-          showErrorMessage("Bad request !!");
-        }
-        break;
-      case 406:
+      case 400 || 406 || 409:
         if (error?.response?.data?.message || error?.response?.data?.error) {
           showErrorMessage(
             error?.response?.data?.message || error?.response?.data?.error

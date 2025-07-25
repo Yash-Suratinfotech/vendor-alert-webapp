@@ -7,7 +7,6 @@ const API_URL = import.meta.env.VITE_APP_ROOT_API;
 export const register = async (payload) => {
   try {
     const res = await axios.post(`${API_URL}/auth/register`, payload);
-    console.log("✌️res --->", res);
     return res.data;
   } catch (error) {
     errorHandler(error);

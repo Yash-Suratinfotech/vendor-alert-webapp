@@ -69,7 +69,6 @@ onMounted(() => {
 
   if (authStore.user != null && authStore.token != null) {
     authStore.getProfile(authStore.token).then((res) => {
-console.log('✌️res --->', res);
       if (res.status === 401) {
         if (res.response?.data?.message) {
           layoutStore.showAlert(res.response?.data?.message, 'alert-danger');
