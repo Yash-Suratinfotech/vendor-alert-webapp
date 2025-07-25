@@ -67,14 +67,6 @@ const routes = [
       authRequired: true,
     },
   },
-  {
-    path: "/chats",
-    name: "chats",
-    component: () => import("../views/chats.vue"),
-    meta: {
-      authRequired: true,
-    },
-  },
 ];
 
 const router = createRouter({
