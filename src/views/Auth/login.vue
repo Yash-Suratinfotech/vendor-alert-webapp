@@ -42,11 +42,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useLayoutStore } from '@/stores/layout';
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth';
 
-const route = useRoute();
 const router = useRouter();
 const layoutStore = useLayoutStore();
 const authStore = useAuthStore();
@@ -83,22 +82,6 @@ const handleSignIn = async () => {
 }
 
 onMounted(async () => {
-    const tokenFromQuery = route.query.token;
-
-    if (tokenFromQuery) {
-        // Save token to localStorage or Pinia
-        localStorage.removeItem("user");
-        localStorage.setItem("token", tokenFromQuery);
-        authStore.token = tokenFromQuery;
-
-        // Remove token from URL
-        router.replace({ path: "/login" });
-        const res = await authStore.getProfile();
-        if (res?.user) {
-            router.push('/chat');
-        }
-    }
-
     if (authStore.user !== null && authStore.user !== undefined) {
         router.push('/chat');
     }

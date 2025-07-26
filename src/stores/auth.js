@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { login, getProfile, updateProfile } from "@/api/auth";
+import { login, getProfile, updateProfile, getVerifyUser } from "@/api/auth";
 import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
@@ -70,6 +70,23 @@ export const useAuthStore = defineStore("auth", {
         return res;
       } finally {
         this.loading = false;
+      }
+    },
+
+    async getVerifyUser(token) {
+      try {
+        const res = await getVerifyUser(token);
+        if (res?.user) {
+          localStorage.setItem("user", JSON.stringify(res.user));
+          localStorage.setItem("token", res.token);
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${res.token}`;
+          this.initializeAuth();
+        }
+        return res;
+      } catch (error) {
+        return error;
       }
     },
 

@@ -87,7 +87,7 @@
               </div>
             </div>
             <div v-else-if="m.messageType == 'order_notification'" class="message-bubble">
-              <img :src="m.orderData.image" :alt="m.orderData.name" class="img-fluid mb-2">
+              <img :src="m.orderData.image" :alt="m.orderData.name" class="img-fluid mb-2" style="height: 150px;">
               <div class="message-text"><span>Name</span> <span class="mx-2">:</span> {{ m.orderData.name }}</div>
               <div class="message-text"><span>SKU</span> <span class="mx-2">:</span> {{ m.orderData.sku }}</div>
               <div class="message-text"><span>Qty</span> <span class="mx-2">:</span> {{ m.orderData.qty }}</div>

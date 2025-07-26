@@ -17,6 +17,14 @@ const routes = [
     },
   },
   {
+    path: "/verify-user",
+    name: "verify-user",
+    component: () => import("../views/Auth/verify-user.vue"),
+    meta: {
+      authRequired: false,
+    },
+  },
+  {
     path: "/register",
     name: "register",
     component: () => import("../views/Auth/register.vue"),

@@ -103,3 +103,14 @@ export const updateProfile = async (payload) => {
     throw error;
   }
 };
+
+// Get Verify User
+export const getVerifyUser = async (payload) => {
+  try {
+    const res = await axios.post(`${API_URL}/auth/verify-user`, payload);
+    return res.data;
+  } catch (error) {
+    errorHandler(error);
+    throw error;
+  }
+};
