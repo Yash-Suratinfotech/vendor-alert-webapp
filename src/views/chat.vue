@@ -79,8 +79,8 @@
               <div class="message-time">
                 {{ defaultMessageTime(m.createdAt) }}
                 <span v-if="m.sender?.id == authStore.user.id" class="message-status">
-                  <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'
-                    " :style="{
+                  <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'"
+                   :style="{
                       color: m.isRead ? '#53bdeb' : '#8696a0',
                     }" />
                 </span>

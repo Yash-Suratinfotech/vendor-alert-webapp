@@ -74,10 +74,11 @@ const handleRegister = async () => {
     };
 
     const res = await register(payload);
-    if (res.success) {
-      localStorage.setItem('pendingVerificationEmail', email.value);
+    if (res.status == 201) {
+      // localStorage.setItem('pendingVerificationEmail', email.value);
       layoutStore.showAlert(res.message, "alert-success");
-      router.push({ name: 'verify-otp', query: { email: email.value } });
+      // router.push({ name: 'verify-otp', query: { email: email.value } });
+      router.push({ name: 'login' });
     }
   } finally {
     isLoading.value = false;

@@ -42,10 +42,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useLayoutStore } from '@/stores/layout';
 import { useAuthStore } from '@/stores/auth'
 
+const route = useRoute();
 const router = useRouter();
 const layoutStore = useLayoutStore();
 const authStore = useAuthStore();
@@ -75,15 +76,31 @@ const handleSignIn = async () => {
         }
     } catch (error) {
         if (error.response?.data?.requiresVerification) {
-            localStorage.setItem('pendingVerificationEmail', email.value);
-            router.push({ name: 'verify-otp', query: { email: email.value } });
+            // localStorage.setItem('pendingVerificationEmail', email.value);
+            // router.push({ name: 'verify-otp', query: { email: email.value } });
         }
     }
 }
 
 onMounted(async () => {
-    if (authStore.user !== null && authStore.user !== undefined) {
-        router.push('/chat')
+    const tokenFromQuery = route.query.token;
+
+    if (tokenFromQuery) {
+        // Save token to localStorage or Pinia
+        localStorage.removeItem("user");
+        localStorage.setItem("token", tokenFromQuery);
+        authStore.token = tokenFromQuery;
+
+        // Remove token from URL
+        router.replace({ path: "/login" });
+        const res = await authStore.getProfile();
+        if (res?.user) {
+            router.push('/chat');
+        }
     }
-})
+
+    if (authStore.user !== null && authStore.user !== undefined) {
+        router.push('/chat');
+    }
+});
 </script>
