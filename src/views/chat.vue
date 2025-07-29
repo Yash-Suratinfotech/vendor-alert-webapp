@@ -11,7 +11,11 @@
     <!-- Sidebar -->
     <div class="sidebar" :class="{ 'mobile-hidden': isMobileChatOpen }">
       <div class="sidebar-header">
-        <div data-bs-toggle="modal" data-bs-target="#profileModal">
+        <div
+          data-bs-toggle="modal"
+          data-bs-target="#profileModal"
+          style="cursor: pointer"
+        >
           <div
             v-if="authStore.user.avatar_url"
             class="profile-pic text-capitalize"
@@ -23,7 +27,7 @@
             />
           </div>
           <div v-else class="profile-pic text-capitalize">
-            {{ authStore.user.username.charAt(0) }}
+            {{ authStore.userInitials }}
           </div>
         </div>
         <div class="header-icons">
@@ -47,7 +51,9 @@
           v-for="chat in filteredChats"
           :key="chat.contactId"
           class="chat-item"
-          :class="{ active: chatStore.conversation?.contactId === chat.contactId }"
+          :class="{
+            active: chatStore.conversation?.contactId === chat.contactId,
+          }"
           @click="selectChat(chat)"
         >
           <div
@@ -65,7 +71,7 @@
             <div class="chat-time">
               {{ defaultMessageTime(chat?.lastMessageTime) }}
             </div>
-            <div v-if="chat?.unreadCount" class="unread-count">
+            <div v-if="chat?.unreadCount > 0" class="unread-count">
               {{ chat?.unreadCount }}
             </div>
           </div>
@@ -318,28 +324,7 @@
     </div>
   </div>
 
-  <!-- Chat Image Modal -->
-  <div
-    class="modal fade"
-    id="imageModal"
-    tabindex="-1"
-    aria-labelledby="imageModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-dialog-centered modal-lg image-modal">
-      <div class="modal-content">
-        <div class="modal-body p-0">
-          <img
-            src="https://cdn.shopify.com/s/files/1/0927/7544/8940/files/female-fashion-model-poses-in-city-street_f6e34363-c899-4311-997a-da99c6ffdd8f.jpg?v=1753164885"
-            alt=""
-            class="img-fluid"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- profile Modal -->
+  <!-- Profile Update Modal -->
   <div
     class="modal fade"
     id="profileModal"
@@ -350,7 +335,7 @@
     <div class="modal-dialog modal-dialog-centered profile-modal">
       <div class="modal-content">
         <div class="modal-header border-bottom-0">
-          <h6 class="modal-title">Modal title</h6>
+          <h6 class="modal-title">Update Profile</h6>
           <button
             type="button"
             class="btn-close"
@@ -358,42 +343,84 @@
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="" class="form-label"> Email </label>
-            <input
-              type="email"
-              class="form-control"
-              placeholder="Enter your email name"
-            />
+        <form @submit.prevent="handleProfileUpdate">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="profileEmail" class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="profileEmail"
+                v-model="profileForm.email"
+                readonly
+                disabled
+                style="background-color: #f8f9fa; cursor: not-allowed"
+              />
+              <small class="text-muted">Email cannot be changed</small>
+            </div>
+            <div class="mb-3">
+              <label for="profileUsername" class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                id="profileUsername"
+                v-model="profileForm.username"
+                placeholder="Enter your username"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="profilePhone" class="form-label">Phone Number</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="profilePhone"
+                v-model="profileForm.phone"
+                placeholder="Enter mobile number"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="profileAvatar" class="form-label">Avatar URL</label>
+              <input
+                type="url"
+                class="form-control"
+                id="profileAvatar"
+                v-model="profileForm.avatarUrl"
+                placeholder="Enter avatar image URL"
+              />
+              <small class="text-muted"
+                >Optional: Add a link to your profile picture</small
+              >
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="" class="form-label"> User Name </label>
-            <input
-              type="email"
-              class="form-control"
-              placeholder="Enter your user name"
-            />
+          <div class="modal-footer gap-2 border-top-0">
+            <button
+              type="button"
+              class="btn m-0 btn-secondary"
+              data-bs-dismiss="modal"
+              :disabled="authStore.profileUpdateLoading"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn m-0 btn-primary"
+              :disabled="authStore.profileUpdateLoading || !isProfileFormValid"
+            >
+              <span
+                v-if="authStore.profileUpdateLoading"
+                class="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              {{
+                authStore.profileUpdateLoading
+                  ? "Updating..."
+                  : "Update Profile"
+              }}
+            </button>
           </div>
-          <div>
-            <label for="" class="form-label"> Phone Number </label>
-            <input
-              type="email"
-              class="form-control"
-              placeholder="Enter mobile number"
-            />
-          </div>
-        </div>
-        <div class="modal-footer gap-2 border-top-0">
-          <button
-            type="button"
-            class="btn m-0 btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
-          <button type="button" class="btn m-0 btn-primary">Submit</button>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -442,6 +469,14 @@ const typingUser = ref("");
 const respondingToOrder = ref(null);
 const pendingResponse = ref(null);
 
+// Profile form state
+const profileForm = ref({
+  email: "",
+  username: "",
+  phone: "",
+  avatarUrl: "",
+});
+
 // Computed properties
 const filteredChats = computed(() => {
   if (!searchQuery.value) {
@@ -451,6 +486,52 @@ const filteredChats = computed(() => {
     chat.contactName.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
+
+const isProfileFormValid = computed(() => {
+  return (
+    profileForm.value.username && profileForm.value.username.trim().length > 0
+  );
+});
+
+// Initialize profile form with user data
+const initializeProfileForm = () => {
+  if (authStore.user) {
+    profileForm.value = {
+      email: authStore.user.email || "",
+      username: authStore.user.username || "",
+      phone: authStore.user.phone || "",
+      avatarUrl: authStore.user.avatar_url || "",
+    };
+  }
+};
+
+// Handle profile update
+const handleProfileUpdate = async () => {
+  try {
+    const payload = {
+      username: profileForm.value.username.trim(),
+      phone: profileForm.value.phone?.trim() || null,
+      avatarUrl: profileForm.value.avatarUrl?.trim() || null,
+    };
+
+    const response = await authStore.updateProfile(payload);
+
+    if (response.status === 200) {
+      layoutStore.showAlert("Profile updated successfully!", "alert-success");
+
+      // Close modal
+      const modal = document.getElementById("profileModal");
+      const modalInstance = bootstrap.Modal.getInstance(modal);
+      modalInstance?.hide();
+    }
+  } catch (error) {
+    console.error("❌ Profile update error:", error);
+    layoutStore.showAlert(
+      "Failed to update profile. Please try again.",
+      "alert-danger"
+    );
+  }
+};
 
 // Socket event handlers
 const setupSocketListeners = () => {
@@ -476,35 +557,46 @@ const setupSocketListeners = () => {
   emitter.on("new_message", (message) => {
     console.log("💬 New message received in Vue:", message);
 
-    // Add to messages if it's for current conversation
+    // Add message to chat store
+    chatStore.addMessageToCurrentConversation(message);
+
+    // Auto-mark as read if it's in current conversation and not from current user
     if (
       chatStore.conversation &&
-      ((message.sender.id === chatStore.conversation.contactId &&
-        message.receiver.id === authStore.user.id) ||
-        (message.sender.id === authStore.user.id &&
-          message.receiver.id === chatStore.conversation.contactId))
+      message.sender.id !== authStore.user.id &&
+      (message.sender.id === chatStore.conversation.contactId ||
+        message.receiver.id === chatStore.conversation.contactId)
     ) {
-      chatStore.messagesList.push(message);
-      scrollToBottom();
-
-      // Mark as read if it's not from current user
-      if (message.sender.id !== authStore.user.id) {
+      // Mark as read via socket
+      if (socketService.isSocketConnected()) {
         socketService.markMessageAsRead(message.id, message.sender.id);
+      } else {
+        // Fallback to API
+        chatStore.markMessageAsRead(message.id);
       }
     }
 
-    // Update conversation list
-    updateConversationFromMessage(message);
+    scrollToBottom();
   });
 
   emitter.on("message_delivered", (data) => {
     console.log("📨 Message delivered:", data);
-    updateMessageStatus(data.messageId, "delivered");
+    chatStore.updateMessageStatus(data.messageId, "delivered");
   });
 
   emitter.on("message_read", (data) => {
     console.log("👁️ Message read:", data);
-    updateMessageStatus(data.messageId, "read");
+    chatStore.updateMessageStatus(data.messageId, "read");
+  });
+
+  emitter.on("messages_read", (data) => {
+    console.log("👁️ Multiple messages read:", data);
+    // Update multiple messages status
+    if (data.messageIds && Array.isArray(data.messageIds)) {
+      data.messageIds.forEach((messageId) => {
+        chatStore.updateMessageStatus(messageId, "read");
+      });
+    }
   });
 
   emitter.on("order_notification", (data) => {
@@ -524,7 +616,7 @@ const setupSocketListeners = () => {
         data.response === "accept";
     }
 
-    // Add the response message
+    // Add the response message if provided
     if (data.responseMessage) {
       chatStore.messagesList.push({
         id: data.responseMessage.id,
@@ -574,6 +666,21 @@ const setupSocketListeners = () => {
       conversation.isOnline = data.isOnline;
     }
   });
+
+  emitter.on("unread_count_updated", (data) => {
+    console.log("📊 Unread count updated:", data);
+    if (data.contactId) {
+      chatStore.unreadCounts[data.contactId] = data.count;
+
+      // Update conversation in list
+      const conversation = chatStore.conversations.find(
+        (c) => c.contactId === data.contactId
+      );
+      if (conversation) {
+        conversation.unreadCount = data.count;
+      }
+    }
+  });
 };
 
 // Window resize handler
@@ -593,6 +700,17 @@ watch(isMobile, (newIsMobile) => {
   }
 });
 
+// Watch for user changes to update profile form
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser) {
+      initializeProfileForm();
+    }
+  },
+  { immediate: true, deep: true }
+);
+
 // Methods
 const selectChat = async (chat) => {
   await chatStore.setConversations(chat);
@@ -605,13 +723,17 @@ const selectChat = async (chat) => {
   // Join conversation via socket
   if (socketService.isSocketConnected()) {
     socketService.joinConversation(chat.contactId);
+
+    // Mark conversation as read
+    socketService.markConversationAsRead(chat.contactId);
   }
 
   if (isMobile.value) {
     isMobileChatOpen.value = true;
   }
 
-  chat.unreadCount = 0;
+  // Reset unread count
+  chatStore.resetUnreadCount(chat.contactId);
 
   nextTick(() => {
     scrollToBottom();
@@ -682,7 +804,7 @@ const handleOrderResponse = async (messageId, response, storeOwnerId) => {
     if (socketService.isSocketConnected()) {
       await socketService.sendOrderResponse(messageId, response, storeOwnerId);
     } else {
-      // Fallback to API
+      // Fallback to API - you might need to add this to your API
       const payload = {
         messageId,
         vendorUserId: authStore.user.id,
@@ -795,38 +917,6 @@ const getMessageStatusColor = (message) => {
   }
 };
 
-const updateMessageStatus = (messageId, status) => {
-  const message = chatStore.messagesList.find((m) => m.id === messageId);
-  if (message) {
-    message.deliveryStatus = status;
-    if (status === "read") {
-      message.isRead = true;
-    }
-  }
-};
-
-const updateConversationFromMessage = (message) => {
-  // Find and update the conversation in the list
-  const conversation = chatStore.conversations.find(
-    (c) =>
-      c.contactId === message.sender.id || c.contactId === message.receiver.id
-  );
-
-  if (conversation) {
-    conversation.lastMessage = message.content;
-    conversation.lastMessageTime = message.createdAt;
-
-    // Increment unread count if message is not from current user and not in current conversation
-    if (
-      message.sender.id !== authStore.user.id &&
-      (!chatStore.conversation ||
-        chatStore.conversation.contactId !== message.sender.id)
-    ) {
-      conversation.unreadCount = (conversation.unreadCount || 0) + 1;
-    }
-  }
-};
-
 const getConversations = async () => {
   var filter = "";
   const u = authStore.user;
@@ -844,6 +934,9 @@ const initializeSocket = () => {
 // Lifecycle hooks
 onMounted(async () => {
   await getConversations();
+
+  // Initialize profile form
+  initializeProfileForm();
 
   // Setup socket listeners
   setupSocketListeners();
@@ -877,10 +970,12 @@ onUnmounted(() => {
   emitter.off("new_message");
   emitter.off("message_delivered");
   emitter.off("message_read");
+  emitter.off("messages_read");
   emitter.off("order_notification");
   emitter.off("order_response");
   emitter.off("vendor_response_notification");
   emitter.off("user_typing");
   emitter.off("contact_status_changed");
+  emitter.off("unread_count_updated");
 });
 </script>

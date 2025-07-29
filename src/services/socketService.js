@@ -1,4 +1,4 @@
-// src/services/socketService.js - Socket.IO client integration for Vue.js
+// src/services/socketService.js
 import { io } from "socket.io-client";
 import emitter from "@/helpers/eventBus";
 
@@ -10,6 +10,7 @@ class SocketService {
     this.maxReconnectAttempts = 5;
     this.currentConversationRoom = null;
     this.typingTimeout = null;
+    this.currentUserId = null;
   }
 
   connect(token, userDetails) {
@@ -18,6 +19,7 @@ class SocketService {
       return;
     }
 
+    this.currentUserId = userDetails.id;
     const socketUrl = import.meta.env.VITE_APP_ROOT_API.replace("/chat", "");
 
     this.socket = io(socketUrl, {
@@ -82,6 +84,11 @@ class SocketService {
       emitter.emit("message_read", data);
     });
 
+    this.socket.on("messages_read", (data) => {
+      console.log("👁️ Multiple messages read:", data);
+      emitter.emit("messages_read", data);
+    });
+
     this.socket.on("message_notification", (data) => {
       console.log("🔔 Message notification:", data);
       emitter.emit("message_notification", data);
@@ -119,6 +126,12 @@ class SocketService {
       console.log("👥 Conversation joined:", data);
       this.currentConversationRoom = data.conversationRoom;
       emitter.emit("conversation_joined", data);
+    });
+
+    // Unread count events
+    this.socket.on("unread_count_updated", (data) => {
+      console.log("📊 Unread count updated:", data);
+      emitter.emit("unread_count_updated", data);
     });
 
     // Error events
@@ -181,7 +194,6 @@ class SocketService {
         orderData,
       };
 
-      // Listen for response (you might want to implement message acknowledgment)
       const timeout = setTimeout(() => {
         reject(new Error("Message send timeout"));
       }, 10000);
@@ -194,12 +206,36 @@ class SocketService {
     });
   }
 
+  // Fixed: Mark single message as read
   markMessageAsRead(messageId, senderId) {
+    if (!this.socket || !this.isConnected) {
+      console.warn("⚠️ Socket not connected, cannot mark message as read");
+      return;
+    }
+
+    console.log("📖 Marking message as read:", { messageId, senderId });
+    this.socket.emit("mark_message_read", { messageId, senderId });
+  }
+
+  // New: Mark multiple messages as read
+  markMessagesAsRead(messageIds, contactId) {
+    if (!this.socket || !this.isConnected) {
+      console.warn("⚠️ Socket not connected, cannot mark messages as read");
+      return;
+    }
+
+    console.log("📖 Marking multiple messages as read:", { messageIds, contactId });
+    this.socket.emit("mark_messages_read", { messageIds, contactId });
+  }
+
+  // Auto-mark unread messages as read when joining conversation
+  markConversationAsRead(contactId) {
     if (!this.socket || !this.isConnected) {
       return;
     }
 
-    this.socket.emit("mark_message_read", { messageId, senderId });
+    console.log("📖 Marking conversation as read for contact:", contactId);
+    this.socket.emit("mark_conversation_read", { contactId });
   }
 
   sendOrderResponse(messageId, response, storeOwnerId) {
@@ -272,6 +308,7 @@ class SocketService {
       this.socket = null;
       this.isConnected = false;
       this.currentConversationRoom = null;
+      this.currentUserId = null;
 
       if (this.typingTimeout) {
         clearTimeout(this.typingTimeout);
@@ -287,6 +324,10 @@ class SocketService {
 
   getCurrentRoom() {
     return this.currentConversationRoom;
+  }
+
+  getCurrentUserId() {
+    return this.currentUserId;
   }
 
   // Get socket ID for debugging
