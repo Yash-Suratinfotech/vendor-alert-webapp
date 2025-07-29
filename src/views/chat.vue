@@ -3,11 +3,20 @@
     <!-- Sidebar -->
     <div class="sidebar" :class="{ 'mobile-hidden': isMobileChatOpen }">
       <div class="sidebar-header">
-        <div v-if="authStore.user.avatar_url" class="profile-pic text-capitalize">
-          <img :src="authStore.user.avatar_url" width="50" class="img-fluid rounded-circle" />
-        </div>
-        <div v-else class="profile-pic text-capitalize">
-          {{ authStore.user.username.charAt(0) }}
+        <div data-bs-toggle="modal" data-bs-target="#profileModal">
+          <div
+            v-if="authStore.user.avatar_url"
+            class="profile-pic text-capitalize"
+          >
+            <img
+              :src="authStore.user.avatar_url"
+              width="50"
+              class="img-fluid rounded-circle"
+            />
+          </div>
+          <div v-else class="profile-pic text-capitalize">
+            {{ authStore.user.username.charAt(0) }}
+          </div>
         </div>
         <div class="header-icons">
           <fa icon="fa-ellipsis-v" />
@@ -15,15 +24,28 @@
       </div>
 
       <div class="search-bar">
-        <input type="text" class="search-input" placeholder="Search or start new chat" v-model="searchQuery"
-          @input="handleSearch" />
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search or start new chat"
+          v-model="searchQuery"
+          @input="handleSearch"
+        />
         <fa icon="fa-magnifying-glass" />
       </div>
 
       <div class="chat-list">
-        <div v-for="chat in filteredChats" :key="chat.contactId" class="chat-item"
-          :class="{ active: chatStore.conversation?.id === chat.contactId }" @click="selectChat(chat)">
-          <div class="chat-avatar text-capitalize" :style="{ background: chat.color }">
+        <div
+          v-for="chat in filteredChats"
+          :key="chat.contactId"
+          class="chat-item"
+          :class="{ active: chatStore.conversation?.id === chat.contactId }"
+          @click="selectChat(chat)"
+        >
+          <div
+            class="chat-avatar text-capitalize"
+            :style="{ background: chat.color }"
+          >
             {{ chat.contactName?.charAt(0) }}
           </div>
           <div class="chat-info">
@@ -31,7 +53,9 @@
             <div class="chat-last-message">{{ chat?.lastMessage }}</div>
           </div>
           <div class="chat-meta">
-            <div class="chat-time">{{ defaultMessageTime(chat?.lastMessageTime) }}</div>
+            <div class="chat-time">
+              {{ defaultMessageTime(chat?.lastMessageTime) }}
+            </div>
             <div v-if="chat?.unreadCount" class="unread-count">
               {{ chat?.unreadCount }}
             </div>
@@ -41,19 +65,34 @@
     </div>
 
     <!-- Chat Area -->
-    <div class="chat-area" :class="{
-      'mobile-active': isMobileChatOpen,
-      'desktop-active': chatStore.conversation && !isMobile,
-    }">
+    <div
+      class="chat-area"
+      :class="{
+        'mobile-active': isMobileChatOpen,
+        'desktop-active': chatStore.conversation && !isMobile,
+      }"
+    >
       <div v-if="chatStore.conversation" class="chat-header">
-        <fa icon="fa-arrow-left" @click="closeMobileChat" v-if="isMobile" class="back-button"></fa>
-        <div class="chat-avatar text-capitalize"
-          :style="{ background: chatStore.conversation.color, position: 'relative' }">
+        <fa
+          icon="fa-arrow-left"
+          @click="closeMobileChat"
+          v-if="isMobile"
+          class="back-button"
+        ></fa>
+        <div
+          class="chat-avatar text-capitalize"
+          :style="{
+            background: chatStore.conversation.color,
+            position: 'relative',
+          }"
+        >
           {{ chatStore.conversation.contactName?.charAt(0) }}
           <div class="online-indicator"></div>
         </div>
         <div class="chat-header-info">
-          <div class="chat-header-name">{{ chatStore.conversation.contactName }}</div>
+          <div class="chat-header-name">
+            {{ chatStore.conversation.contactName }}
+          </div>
           <div class="chat-header-status">
             {{ chatStore.conversation.status || "online" }}
           </div>
@@ -63,45 +102,88 @@
         </div>
       </div>
 
-      <div class="messages-area" ref="messagesArea" v-if="chatStore.conversation">
-        <div v-for="m in chatStore.messagesList" :key="m.id" class="message text-white"
-          :class="{ sent: m.sender?.id == authStore.user.id, received: m.sender?.id != authStore.user.id }">
+      <div
+        class="messages-area"
+        ref="messagesArea"
+        v-if="chatStore.conversation"
+      >
+        <div
+          v-for="m in chatStore.messagesList"
+          :key="m.id"
+          class="message text-white"
+          :class="{
+            sent: m.sender?.id == authStore.user.id,
+            received: m.sender?.id != authStore.user.id,
+          }"
+        >
           <div v-if="m.messageType == 'text'" class="message-bubble">
             <div class="message-text">{{ m.content }}</div>
             <div class="message-time">
               {{ defaultMessageTime(m.createdAt) }}
-              <span v-if="m.sender?.id == authStore.user.id" class="message-status">
-                <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'
-                  " :style="{
-                      color: m.isRead ? '#53bdeb' : '#8696a0',
-                    }" />
+              <span
+                v-if="m.sender?.id == authStore.user.id"
+                class="message-status"
+              >
+                <fa
+                  :icon="m.isRead ? 'fa-check-double' : 'fa-check'"
+                  :style="{
+                    color: m.isRead ? '#53bdeb' : '#8696a0',
+                  }"
+                />
               </span>
             </div>
           </div>
           <div v-else-if="m.messageType == 'file'" class="message-bubble">
-            <img :src="m.fileUrl" :alt="m.fileName" class="img-fluid mb-2">
+            <img :src="m.fileUrl" :alt="m.fileName" class="img-fluid mb-2" />
             <div class="message-text">{{ m.content || m.fileName }}</div>
             <div class="message-time">
               {{ defaultMessageTime(m.createdAt) }}
-              <span v-if="m.sender?.id == authStore.user.id" class="message-status">
-                <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'" :style="{
-                  color: m.isRead ? '#53bdeb' : '#8696a0',
-                }" />
+              <span
+                v-if="m.sender?.id == authStore.user.id"
+                class="message-status"
+              >
+                <fa
+                  :icon="m.isRead ? 'fa-check-double' : 'fa-check'"
+                  :style="{
+                    color: m.isRead ? '#53bdeb' : '#8696a0',
+                  }"
+                />
               </span>
             </div>
           </div>
-          <div v-else-if="m.messageType == 'order_notification'" class="message-bubble">
-            <img :src="m.orderData.image" :alt="m.orderData.name" class="img-fluid mb-2" style="height: 150px;">
-            <div class="message-text"><span>Name</span> <span class="mx-2">:</span> {{ m.orderData.name }}</div>
-            <div class="message-text"><span>SKU</span> <span class="mx-2">:</span> {{ m.orderData.sku }}</div>
-            <div class="message-text"><span>Qty</span> <span class="mx-2">:</span> {{ m.orderData.qty }}</div>
+          <div
+            v-else-if="m.messageType == 'order_notification'"
+            class="message-bubble"
+          >
+            <img
+              :src="m.orderData.image"
+              :alt="m.orderData.name"
+              class="img-fluid mb-2 w-100 cursor"
+              data-bs-toggle="modal"
+              data-bs-target="#imageModal"
+            />
+            <div class="message-text">
+              <span>Name</span> <span class="mx-2">:</span>
+              {{ m.orderData.name }}
+            </div>
+            <div class="message-text">
+              <span>SKU</span> <span class="mx-2">:</span> {{ m.orderData.sku }}
+            </div>
+            <div class="message-text">
+              <span>Qty</span> <span class="mx-2">:</span> {{ m.orderData.qty }}
+            </div>
             <div class="message-time">
               {{ defaultMessageTime(m.createdAt) }}
-              <span v-if="m.sender?.id == authStore.user.id" class="message-status">
-                <fa :icon="m.isRead ? 'fa-check-double' : 'fa-check'
-                  " :style="{
-                      color: m.isRead ? '#53bdeb' : '#8696a0',
-                    }" />
+              <span
+                v-if="m.sender?.id == authStore.user.id"
+                class="message-status"
+              >
+                <fa
+                  :icon="m.isRead ? 'fa-check-double' : 'fa-check'"
+                  :style="{
+                    color: m.isRead ? '#53bdeb' : '#8696a0',
+                  }"
+                />
               </span>
             </div>
           </div>
@@ -129,11 +211,100 @@
         <div class="input-actions">
           <fa icon="fa-plus" @click="handleAttachment" />
         </div>
-        <textarea ref="messageInput" class="message-input" placeholder="Type a message" rows="1"
-          v-model="currentMessage" @input="handleInputResize" @keypress="handleKeyPress"></textarea>
+        <textarea
+          ref="messageInput"
+          class="message-input"
+          placeholder="Type a message"
+          rows="1"
+          v-model="currentMessage"
+          @input="handleInputResize"
+          @keypress="handleKeyPress"
+        ></textarea>
         <button class="send-button" @click="sendMessage">
           <fa icon="fas fa-paper-plane" />
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Image Modal -->
+  <div
+    class="modal fade"
+    id="imageModal"
+    tabindex="-1"
+    aria-labelledby="imageModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg image-modal">
+      <div class="modal-content">
+        <div class="modal-body p-0">
+          <img
+            src="https://cdn.shopify.com/s/files/1/0927/7544/8940/files/female-fashion-model-poses-in-city-street_f6e34363-c899-4311-997a-da99c6ffdd8f.jpg?v=1753164885"
+            alt=""
+            class="img-fluid"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- profile Modal -->
+  <div
+    class="modal fade"
+    id="profileModal"
+    tabindex="-1"
+    aria-labelledby="profileModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered profile-modal">
+      <div class="modal-content">
+        <div class="modal-header border-bottom-0">
+          <h6 class="modal-title">Modal title</h6>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="" class="form-label"> Email  </label>
+            <input
+              type="email"
+              class="form-control"
+              placeholder="Enter your email name"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="" class="form-label"> User Name </label>
+            <input
+              type="email"
+              class="form-control"
+              placeholder="Enter your user name"
+            />
+          </div>
+          <div>
+            <label for="" class="form-label"> Phone Number </label>
+            <input
+              type="email"
+              class="form-control"
+              placeholder="Enter mobile number"
+            />
+          </div>
+        </div>
+        <div class="modal-footer gap-2 border-top-0">
+          <button
+            type="button"
+            class="btn m-0 btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button type="button" class="btn m-0 btn-primary">
+            Submit
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -142,9 +313,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 
-import { useAuthStore } from '@/stores/auth';
-import { useChatStore } from '@/stores/chat';
-import { defaultMessageTime } from "@/helpers/generalVariable.js"
+import { useAuthStore } from "@/stores/auth";
+import { useChatStore } from "@/stores/chat";
+import { defaultMessageTime } from "@/helpers/generalVariable.js";
 
 const authStore = useAuthStore();
 const chatStore = useChatStore();
@@ -252,7 +423,7 @@ const sendMessage = () => {
     receiverId: chatStore.conversation.contactId,
     content: currentMessage.value,
     messageType: "text",
-  }
+  };
 
   chatStore.sendMessage(payload);
   currentMessage.value = "";
@@ -313,12 +484,12 @@ const handleAttachment = () => {
 };
 
 const getConversations = async () => {
-  var filter = '';
+  var filter = "";
   const u = authStore.user;
   filter = `?userId=${u.id}&userType=${u.user_type}`;
 
   await chatStore.getConversations(filter);
-}
+};
 
 // Lifecycle hooks
 onMounted(async () => {
