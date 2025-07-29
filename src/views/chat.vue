@@ -253,7 +253,7 @@
               >
                 <div class="icon-box">
                   <span v-if="m.isAccept === null" class="badge bg-warning">
-                    <fa icon="fa-hashtag" />
+                    <fa icon="fa-minus" />
                   </span>
                   <span v-else-if="m.isAccept" class="badge bg-success">
                     <fa icon="fa-check" />
