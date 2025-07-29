@@ -47,7 +47,7 @@
           v-for="chat in filteredChats"
           :key="chat.contactId"
           class="chat-item"
-          :class="{ active: chatStore.conversation?.id === chat.contactId }"
+          :class="{ active: chatStore.conversation?.contactId === chat.contactId }"
           @click="selectChat(chat)"
         >
           <div
