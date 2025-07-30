@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
@@ -14,6 +14,9 @@ export default defineConfig({
     hmr: {
       overlay: false,
     },
+  },
+  optimizeDeps: {
+    exclude: ['@fortawesome/fontawesome-svg-core', '@fortawesome/free-solid-svg-icons', '@fortawesome/vue-fontawesome'],
   },
   resolve: {
     alias: {
