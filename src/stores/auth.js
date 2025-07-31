@@ -58,7 +58,7 @@ export const useAuthStore = defineStore("auth", {
           ] = `Bearer ${res.token}`;
 
           // Don't reload the page, let the router handle navigation
-          // window.location.reload();
+          window.location.reload();
         }
         return res;
       } catch (error) {
