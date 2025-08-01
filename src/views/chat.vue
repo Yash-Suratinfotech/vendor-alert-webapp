@@ -353,10 +353,9 @@
                 id="profileEmail"
                 v-model="profileForm.email"
                 readonly
-                disabled
-                style="background-color: #f8f9fa; cursor: not-allowed"
+                style="cursor: not-allowed"
               />
-              <small class="text-muted">Email cannot be changed</small>
+              <small class="text-white">Email cannot be changed</small>
             </div>
             <div class="mb-3">
               <label for="profileUsername" class="form-label">Username</label>
