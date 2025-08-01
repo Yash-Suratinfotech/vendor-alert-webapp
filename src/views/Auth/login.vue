@@ -12,7 +12,7 @@
         <div>
           <label for="email" class="form-label">Email address</label>
           <input
-            type="email"
+            type="text"
             class="form-control"
             id="email"
             v-model="email"
@@ -88,6 +88,17 @@ const handleSignIn = async () => {
   if (password.value.length < 6) {
     layoutStore.showAlert(
       "Password must be at least 6 characters long.",
+      "alert-danger"
+    );
+    return;
+  }
+  const allowedDomains = [".myshopify.com"];
+  const isAllowed = allowedDomains.some((domain) =>
+    email.value.endsWith(domain)
+  );
+  if (!isAllowed) {
+    layoutStore.showAlert(
+      "Only allowed business domains and email are supported.",
       "alert-danger"
     );
     return;
